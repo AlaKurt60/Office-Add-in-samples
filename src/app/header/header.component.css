@@ -1,0 +1,14 @@
+h3 {
+  color: black;
+  text-align: center;
+  margin: 10px;
+}
+.auth {
+  color: black;
+  text-align: right;
+  position: absolute;
+  top: 0;
+  right: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}

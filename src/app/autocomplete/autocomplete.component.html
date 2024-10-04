@@ -1,0 +1,22 @@
+<form class="example-form">
+  <div style="margin-top: 20px">
+    <input
+      type="text"
+      placeholder="{{ autocompleteLabel }}"
+      aria-label="Number"
+      matInput
+      [formControl]="searchControl"
+      [matAutocomplete]="auto"
+      class="example-form"
+    />
+    <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
+      @for (lejer of lejerArrayFiltered | async; track lejer.id) {
+      <mat-option
+        [value]="lejer.DisplayTekst"
+        (onSelectionChange)="selectedLejer(lejer)"
+        >{{ lejer.DisplayTekst }}</mat-option
+      >
+      }
+    </mat-autocomplete>
+  </div>
+</form>

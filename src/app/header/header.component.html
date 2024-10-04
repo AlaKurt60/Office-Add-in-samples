@@ -1,0 +1,8 @@
+<div style="display: contents">
+  <h3>Outlook add in TEST</h3>
+  @if(isLogedIn){
+  <p class="auth" (click)="LogUd()">{{ getLogedInName() }} Log ud</p>
+  } @else {
+  <p class="auth" (click)="Login()">{{ getLogedInName() }} Login</p>
+  }
+</div>
