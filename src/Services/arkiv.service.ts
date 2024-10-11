@@ -20,7 +20,7 @@ export class ArkivService {
       map((data: ArkivMappeRoot) => {
         console.log('Arkiv first');
         console.log(data);
-        var res = data['$values'];
+        var res = data['MapperReadonly'];
         console.log('Arkiv');
         console.log(res);
         // var idIndex = 0;
