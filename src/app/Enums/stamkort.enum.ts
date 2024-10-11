@@ -1,7 +1,7 @@
 export enum StamkortEnum {
   Lejer,
   Bygning,
-  Lejemaal,
+  Lejemål,
   Finansenhed,
   Ejendom,
   Selskab,

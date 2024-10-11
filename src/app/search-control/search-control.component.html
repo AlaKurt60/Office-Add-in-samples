@@ -11,32 +11,31 @@
             name="sel"
             title="Vælg"
             class="form-control"
-            [(ngModel)]="stamkortSelected"
+            [(ngModel)]="stamkortSelectedValue"
+            (change)="onChangeStamkort($event)"
           >
-            <option *ngFor="let stamkort of stamkortList">
+            <option *ngFor="let stamkort of stamList" [ngValue]="stamkort">
               {{ stamkort }}
             </option>
           </select>
         </div>
         <app-autocomplete
-          [stamkortType]="StamkortTypesEnum.Lejer"
+          [stamkortTypeValue]="stamkortSelectedValue"
           [autocompleteType]="AutocompleteTypeEnum.Stamkort"
           autocompleteLabel="Indtast navn"
         />
         <app-autocomplete
           [autocompleteType]="AutocompleteTypeEnum.Noter"
-          [stamkortType]="2"
           autocompleteLabel="Notetype"
         />
         <app-autocomplete
           [autocompleteType]="AutocompleteTypeEnum.Arkiv"
-          [stamkortType]="1"
           autocompleteLabel="Arkivmappe"
         />
       </form>
+      <button type="button" (click)="GemMail()" id="search">Gem mail</button>
     </div>
   </div>
-  <!-- <button (click)="SearchLejer()" id="search">Søg</button>
   <!-- @for (item of lejer; track item.IdReadonly) {}  -->
   <!-- <p *ngFor="let lej of lejerArray"> -->
   <!-- {{ lej.DisplayTekst }} -->

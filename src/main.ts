@@ -16,12 +16,12 @@ import { AuthInterceptorservice } from './Auth/auth-interceptor.service';
 function loggingInterceptor(request: HttpRequest<any>, next: HttpHandlerFn) {
   console.log('Outgoing request');
   console.log(request);
-  const req = request.clone({
-    headers: request.headers.set('Dette-er-en-hest', 'Test'),
-  });
-  console.log(req);
-
-  return next(req);
+  // const req = request.clone({
+  //   headers: request.headers.set('Dette-er-en-hest', 'Test'),
+  // });
+  // console.log(req);
+  // return next(req);
+  return next(request);
 }
 
 bootstrapApplication(AppComponent, {

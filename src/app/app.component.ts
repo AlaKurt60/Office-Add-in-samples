@@ -34,7 +34,6 @@ export class AppComponent {
     this.isLoginProgress = true;
     this.loginService.login(userName, password).subscribe({
       next: (token) => {
-        console.log('Token' + token.access_token);
         this.isLogedIn = true;
         // this.router.navigate(['/home']);
         // this.token = token.access_token;

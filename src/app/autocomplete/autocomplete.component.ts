@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, input, Input, OnInit, output } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   debounceTime,
@@ -23,6 +23,8 @@ import { SearchService } from '../search-control/search.service';
 import { Lejer, LejerStruct } from '../../Models/lejer.model';
 import { StamkortEnum } from '../Enums/stamkort.enum';
 import { AutocompleteTypeEnum } from '../Enums/autocompleteType.enum';
+import { Note } from '../../Models/notetype.model';
+import { ArkivService } from '../../Services/arkiv.service';
 
 @Component({
   selector: 'app-autocomplete',
@@ -40,40 +42,87 @@ import { AutocompleteTypeEnum } from '../Enums/autocompleteType.enum';
 })
 export class AutocompleteComponent implements OnInit {
   @Input({ required: true }) autocompleteLabel!: string;
-  @Input({ required: true }) stamkortType!: StamkortEnum;
+  @Input() stamkortTypeValue!: string;
   @Input({ required: true }) autocompleteType!: AutocompleteTypeEnum;
-  lejerArrayFiltered!: Observable<any[]>;
-  // lejerArrayFiltered!: Observable<Lejer[]>;
-  lejerArrayFilteredArray: Lejer[] = [];
+
+  select = output<string>();
+  onselect = input<string>();
+
+  optionArrayFiltered!: Observable<any[]>;
+  noteArray!: Note[];
 
   searchControl = new FormControl('');
-  options: string[] = [];
-  filteredOptions?: Observable<string[]>;
 
-  constructor(private searchSercice: SearchService) {}
-  streets: string[] = [
-    'Champs-Élysées',
-    'Lombard Street',
-    'Abbey Road',
-    'Fifth Avenue',
-  ];
+  constructor(
+    private searchSercice: SearchService,
+    private arkivService: ArkivService
+  ) {}
 
   ngOnInit() {
     switch (this.autocompleteType) {
       case AutocompleteTypeEnum.Stamkort: {
-        this.lejerArrayFiltered = this.setFilter();
+        this.optionArrayFiltered = this.setFilterOptions();
         break;
       }
       case AutocompleteTypeEnum.Noter: {
-        this.lejerArrayFiltered = this.setNoteTyper();
+        this.setNoteAutocomplete();
         break;
       }
       case AutocompleteTypeEnum.Arkiv: {
-        // this.lejerArrayFiltered = this.setFilter();
+        // this.lejerArrayFiltered = this.setArkivMapper();
         break;
       }
     }
   }
+  stamList: string[] = Object.keys(StamkortEnum).filter((v) =>
+    isNaN(Number(v))
+  );
+
+  private getAsNumber(stamkortTypeValue: string): number {
+    for (var n in this.stamList) {
+      if (this.stamList[n] == stamkortTypeValue) {
+        return +n;
+      }
+    }
+    return -1;
+  }
+
+  setFilterOptions() {
+    return this.searchControl.valueChanges.pipe(
+      debounceTime(400),
+      filter((x: any) => x.length > 0), //Måske 1 eller 2
+      distinctUntilChanged(),
+      switchMap((searchTerm: string) => {
+        // switchmap handles cancelling the previous pending request for the new one. ensuring the user doesn't see old data as they typehead
+        var asNumber = this.getAsNumber(this.stamkortTypeValue);
+        var response = this.searchSercice.searchOptions(asNumber, searchTerm);
+        return response;
+      })
+    );
+  }
+
+  private setNoteAutocomplete() {
+    this.searchSercice.getNoteTyper().subscribe({
+      next: (data: Note[]) => {
+        this.noteArray = data;
+        this.optionArrayFiltered = this.searchControl.valueChanges.pipe(
+          startWith(''),
+          map((value) => this._filter(value || ''))
+        );
+      },
+      error: (errorres) => console.log('Error ', errorres),
+    });
+  }
+
+  private _filter(value: string): any[] {
+    const filterValue = value.toLowerCase();
+    return this.noteArray.filter(
+      (op) =>
+        op.DisplayTekst != '' &&
+        op.DisplayTekst.toLowerCase().includes(filterValue)
+    );
+  }
+
   setNoteTyper() {
     return this.searchControl.valueChanges.pipe(
       debounceTime(400),
@@ -91,32 +140,36 @@ export class AutocompleteComponent implements OnInit {
     );
   }
 
-  setFilter() {
-    return this.searchControl.valueChanges.pipe(
-      debounceTime(400),
-      filter((x: any) => x.length > 1),
-      distinctUntilChanged(),
-      switchMap((searchTerm: string) => {
-        // switchmap handles cancelling the previous pending request for the new one. ensuring the user doesn't see old data as they typehead
-        console.log('searchTerm');
-        console.log(searchTerm);
-        var response = this.searchSercice.searchLejer(
-          StamkortEnum.Lejer,
-          searchTerm
-        );
-        console.log('Response ', response);
-        console.log(response);
-        return response;
-      })
-    );
-  }
+  selectedLejer(lejerSelected: any) {
+    var lej = lejerSelected as Lejer;
 
-  selectedLejer(lejerSelected: Lejer) {
+    if (lejerSelected instanceof Lejer) {
+      var url = (lejerSelected as Lejer).getArkivUrlPart();
+      var mapper = this.arkivService.getArkivMapper(url).subscribe({
+        next: (data) => {
+          console.log(data);
+        },
+        error: (er) => console.log(er),
+      });
+    }
+
+    var lll = new Lejer(lejerSelected, 0);
+    if (lll == null) {
+    }
+    console.log(lll);
+    console.log(lll.getArkivUrlPart());
+
     console.log('Selected');
     console.log(lejerSelected);
+    console.log(lejerSelected.IdReadonly);
+    var res = lejerSelected.getArkivUrlPart();
+    console.log('Url ' + res);
   }
 }
 
+function Testfunk(a: any) {
+  throw new Error('Function not implemented.');
+}
 //Test
 // SetDisplayTekst(lejers: Observable<Lejer[]>) {
 //   var index = 0;

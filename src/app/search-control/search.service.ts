@@ -1,9 +1,14 @@
-import { Injectable, OnInit } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { catchError, map, Observable, tap, throwError } from 'rxjs';
+import { map, Observable, throwError } from 'rxjs';
 import { Lejer, LejerStruct } from '../../Models/lejer.model';
 import { StamkortEnum } from '../Enums/stamkort.enum';
 import { Note, NoterStruct } from '../../Models/notetype.model';
+import { Bygning, BygningStruct } from '../../Models/bygning.model';
+import { Lejemaal, LejemaalStruct } from '../../Models/lejemaal.model';
+import { Finansenhed, FinansenhedStruct } from '../../Models/finansenhed.model';
+import { LejerMapper } from '../../Mapper/lejerMapper';
+import { BygningMapper } from '../../Mapper/bygningMapper';
 
 @Injectable({ providedIn: 'root' })
 export class SearchService {
@@ -19,8 +24,8 @@ export class SearchService {
   Init() {
     this.map.set(StamkortEnum.Lejer, 'api/bolig/lejere');
     this.map.set(StamkortEnum.Bygning, 'api/query/bolig/bygningSoegning');
-    this.map.set(StamkortEnum.Lejemaal, 'api/query/bolig/bygningSoegning');
-    this.map.set(StamkortEnum.Finansenhed, 'api/query/bolig/bygningSoegning');
+    this.map.set(StamkortEnum.Lejemål, 'api/query/bolig/lejemaalSoegning');
+    this.map.set(StamkortEnum.Finansenhed, 'api/query/finans/finansenheder');
     this.map.set(StamkortEnum.Ejendom, 'api/query/bolig/bygningSoegning');
     this.map.set(StamkortEnum.Kreditor, 'api/query/bolig/bygningSoegning');
   }
@@ -33,20 +38,15 @@ export class SearchService {
   }
 
   getNoteTyper(): Observable<Note[]> {
-    var url = this.getAbsolutUrl('api/generelt/koder');
+    var url = this.getAbsolutUrl('api/generelt/koderfornotetypes');
     return this.httpClient.get<NoterStruct>(url).pipe(
       map((data: NoterStruct) => {
         var res = data['$values'];
         console.log('Noter');
         console.log(res);
         var idIndex = 0;
-        res = res.filter(
-          (q) => q.ErSynlig == true && q.$type.includes('tyyype')
-        );
-        console.log('Noter 2');
-        console.log(res);
         res.forEach((q) => {
-          q.DisplayTekst = q.Tekst + ', ' + q.$type;
+          q.DisplayTekst = q.Tekst;
           q.id = idIndex;
           idIndex++;
         });
@@ -55,28 +55,32 @@ export class SearchService {
     );
   }
 
-  searchLejer(key: number, soegetekst: string): Observable<Lejer[]> {
+  searchOptions(key: number, soegetekst: string): Observable<any[]> {
     var url = this.getApiUrl(key, soegetekst);
     switch (key) {
       case StamkortEnum.Lejer: {
-        return this.doSearchLejer(url);
+        return this.searchLejer(url);
+      }
+      case StamkortEnum.Bygning: {
+        return this.searchBygning(url);
+      }
+      case StamkortEnum.Lejemål: {
+        return this.searchLejemaal(url);
+      }
+      case StamkortEnum.Finansenhed: {
+        return this.searchFinansenhed(url);
       }
     }
     return new Observable<any[]>();
   }
 
-  private getApiUrl(key: number, soegetekst: string) {
-    var apiUrl = this.map.get(key) ?? '';
-    return this.getAbsolutUrl(apiUrl) + '?soegeTekst=' + soegetekst;
-  }
-
-  private doSearchLejer(url: string) {
-    return this.httpClient.get<LejerStruct>(url).pipe(
-      map((data: LejerStruct) => {
+  private searchFinansenhed(url: string) {
+    return this.httpClient.get<FinansenhedStruct>(url).pipe(
+      map((data: FinansenhedStruct) => {
         var res = data['$values'];
         var idIndex = 0;
         res.forEach((q) => {
-          this.setDisplayTekstLejer(q);
+          this.setDisplayTekstFinansenhed(q);
           q.id = idIndex;
           idIndex++;
         });
@@ -85,25 +89,62 @@ export class SearchService {
     );
   }
 
-  private setDisplayTekstLejer(lejer: Lejer) {
-    lejer.DisplayTekst =
-      lejer.LejerstrengReadonly +
-      ', ' +
-      lejer.NavnReadonly +
-      ', ' +
-      lejer.Adresse1Readonly +
-      ', ' +
-      lejer.Adresse2Readonly +
-      ', ' +
-      lejer.LejerStatusString;
-    return lejer;
+  private searchLejemaal(url: string) {
+    return this.httpClient.get<LejemaalStruct>(url).pipe(
+      map((data: LejemaalStruct) => {
+        var res = data['$values'];
+        var idIndex = 0;
+        res.forEach((q) => {
+          this.setDisplayTekstLejemaal(q);
+          q.id = idIndex;
+          idIndex++;
+        });
+        return res;
+      })
+    );
   }
 
-  //[Route(@"api/esdh/{kartotek}/{id}/journalplan/mapper")]
-  VisMapper() {
-    //var url = this.getAbsolutUrl('api/esdh/{0}/{1}/journalplan/mapper');
-    var url = this.getAbsolutUrl('api/esdh/lejere/3178/journalplan/mapper');
-    return this.httpClient.get<object[]>(url);
+  private searchBygning(url: string) {
+    return this.httpClient.get<BygningStruct>(url).pipe(
+      map((data: BygningStruct) => {
+        return BygningMapper.map(data['$values']);
+      })
+    );
+  }
+
+  private searchLejer(url: string) {
+    return this.httpClient.get<LejerStruct>(url).pipe(
+      map((data: LejerStruct) => {
+        return LejerMapper.map(data['$values']);
+      })
+    );
+  }
+
+  private setDisplayTekstFinansenhed(finansenhed: Finansenhed) {
+    finansenhed.DisplayTekst =
+      finansenhed.FinselskabNr + ' - ' + finansenhed.Navn;
+    return finansenhed;
+  }
+
+  private setDisplayTekstLejemaal(lejemaal: Lejemaal) {
+    lejemaal.DisplayTekst =
+      lejemaal.LejemaalstrengReadonly +
+      ', ' +
+      lejemaal.Adresse1Readonly +
+      this.addIfNotNull(lejemaal.Adresse2Readonly);
+    ', ' + lejemaal.Adresse2Readonly;
+    return lejemaal;
+  }
+
+  private addIfNotNull(tekst?: string) {
+    return tekst != null && tekst != '' ? ', ' + tekst : '';
+  }
+
+  private getApiUrl(key: number, soegetekst: string) {
+    var apiUrl = this.map.get(key) ?? '';
+    return this.getAbsolutUrl(
+      apiUrl + '?soegeTekst=' + soegetekst + '&maxrecords=150'
+    );
   }
 
   getAbsolutUrl(urlPart: String) {

@@ -10,7 +10,7 @@
       class="example-form"
     />
     <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
-      @for (lejer of lejerArrayFiltered | async; track lejer.id) {
+      @for (lejer of optionArrayFiltered | async; track lejer.id) {
       <mat-option
         [value]="lejer.DisplayTekst"
         (onSelectionChange)="selectedLejer(lejer)"
