@@ -1,6 +1,12 @@
-<form class="example-form">
+<form #autocompleteForm="ngForm" class="example-form">
   <div style="margin-top: 20px">
     <input
+      id="autocompleteValue"
+      name="autocompleteValue"
+      (mouseover)="mouseOver($event)"
+      input-select-all
+      (focus)="onFocus()"
+      [(ngModel)]="selectedOption"
       type="text"
       placeholder="{{ autocompleteLabel }}"
       aria-label="Number"
@@ -10,11 +16,11 @@
       class="example-form"
     />
     <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
-      @for (lejer of optionArrayFiltered | async; track lejer.id) {
+      @for (option of optionArrayFiltered | async; track option.id) {
       <mat-option
-        [value]="lejer.DisplayTekst"
-        (onSelectionChange)="selectedLejer(lejer)"
-        >{{ lejer.DisplayTekst }}</mat-option
+        [value]="option.DisplayTekst"
+        (onSelectionChange)="onSelectOption(option)"
+        >{{ option.DisplayTekst }}</mat-option
       >
       }
     </mat-autocomplete>

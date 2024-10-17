@@ -19,11 +19,11 @@ import { Finansenhed } from '../../Models/finansenhed.model';
 })
 export class SearchControlComponent {
   stamkortSelectedValue: string = StamkortEnum[StamkortEnum.Lejer];
-
+  selectedOption: any = null;
   lejerArray: Lejer[] = [];
   stamkortEnumTest = StamkortEnum.Debitor;
 
-  onSubmit(_t8: NgForm) {}
+  onSubmit(searchform: NgForm) {}
 
   public StamkortTypesEnum = StamkortEnum;
   public AutocompleteTypeEnum = AutocompleteTypeEnum;
@@ -35,7 +35,16 @@ export class SearchControlComponent {
 
   onChangeStamkort(stamkortEvent: Event) {}
 
-  GemMail() {
+  optionValueSelected(event: any) {
+    console.log('event');
+    console.log(event);
+    this.selectedOption = event;
+  }
+  GemMail(searchform: NgForm) {
+    console.log('searchform');
+    console.log(searchform);
+    alert(this.selectedOption.DisplayTekst);
+    this.selectedOption = 'new Lejer(null, 10)';
     // const interfacteTest: Lejer = new Lejer(null);
     // console.log(interfacteTest.getArkivUrl22());
   }

@@ -1,4 +1,3 @@
-import { By } from '@angular/platform-browser';
 import { IModel } from '../Interface/imodel.model';
 import { StringUtility } from '../Helper/string.utility';
 import { ArkivMappe } from './arkiv.model';
@@ -41,6 +40,6 @@ export class Bygning implements IModel {
   }
 
   getArkivUrlPart(): string {
-    return 'api/esdh/bygninger/' + this.BygningId;
+    return 'api/esdh/bygninger/' + this.BygningId + '/journalplan/mapper';
   }
 }

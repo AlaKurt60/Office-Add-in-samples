@@ -9,27 +9,30 @@ export class ArkivService {
   usdServerUrl = 'http://localhost:54321/';
   map = new Map<number, string>();
   koder: string[] = [];
+  arkivMapper: ArkivMappe[] = [];
 
   constructor(private httpClient: HttpClient) {}
 
   getArkivMapper(url: string): Observable<ArkivMappe[]> {
     var url = this.getAbsolutUrl(url);
-    var arkivMapper: ArkivMappe[] = [];
     console.log('Url arkiv ' + url);
     return this.httpClient.get<ArkivMappeRoot>(url).pipe(
       map((data: ArkivMappeRoot) => {
         console.log('Arkiv first');
         console.log(data);
-        var res = data['MapperReadonly'];
+        var res = data.MapperReadonly.$values; //['MapperReadonly'];
         console.log('Arkiv');
         console.log(res);
-        // var idIndex = 0;
-        // res.$values.forEach((q) => {
-        //   q.DisplayTekst = q.Navn;
-        //   q.id = idIndex;
-        //   idIndex++;
-        // });
-        return arkivMapper;
+        var idIndex = 0;
+        res.forEach((q) => {
+          q.DisplayTekst = q.Navn;
+          q.id = idIndex;
+          idIndex++;
+        });
+        this.arkivMapper = res;
+        console.log('Mapper');
+        console.log(res);
+        return res;
       })
     );
   }

@@ -1,5 +1,24 @@
-import { Component, input, Input, OnInit, output } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  afterNextRender,
+  Component,
+  DestroyRef,
+  EventEmitter,
+  inject,
+  input,
+  Input,
+  OnInit,
+  Output,
+  output,
+  SimpleChanges,
+  viewChild,
+} from '@angular/core';
+import {
+  FormControl,
+  FormsModule,
+  NgForm,
+  ReactiveFormsModule,
+  NgModel,
+} from '@angular/forms';
 import {
   debounceTime,
   distinctUntilChanged,
@@ -8,6 +27,8 @@ import {
   Observable,
   of,
   startWith,
+  subscribeOn,
+  Subscription,
   switchMap,
 } from 'rxjs';
 
@@ -25,6 +46,7 @@ import { StamkortEnum } from '../Enums/stamkort.enum';
 import { AutocompleteTypeEnum } from '../Enums/autocompleteType.enum';
 import { Note } from '../../Models/notetype.model';
 import { ArkivService } from '../../Services/arkiv.service';
+import { Bygning } from '../../Models/bygning.model';
 
 @Component({
   selector: 'app-autocomplete',
@@ -41,9 +63,25 @@ import { ArkivService } from '../../Services/arkiv.service';
   styleUrl: './autocomplete.component.css',
 })
 export class AutocompleteComponent implements OnInit {
+  mouseOver(event: MouseEvent) {
+    // alert(event);
+  }
+  private searchForm = viewChild.required<NgForm>('autocompleteForm');
+
   @Input({ required: true }) autocompleteLabel!: string;
   @Input() stamkortTypeValue!: string;
   @Input({ required: true }) autocompleteType!: AutocompleteTypeEnum;
+
+  @Input() set selectedOptionInput(value: any) {
+    console.log('Stamkort value ', value);
+    this.searchControl.setValue(null); // = 'Test'
+    // this.selectedOption = null;
+  }
+  // @Input() selectedOptionInput?: any; // = (a: any) => DoSome(a);
+
+  @Output() optionLejerSelected = new EventEmitter();
+
+  arkivService = inject(ArkivService);
 
   select = output<string>();
   onselect = input<string>();
@@ -52,24 +90,39 @@ export class AutocompleteComponent implements OnInit {
   noteArray!: Note[];
 
   searchControl = new FormControl('');
+  selectedOption: any;
+
+  destroyRef = inject(DestroyRef);
 
   constructor(
-    private searchSercice: SearchService,
-    private arkivService: ArkivService
-  ) {}
+    private searchSercice: SearchService // private arkivService: ArkivService
+  ) {
+    afterNextRender(() => {
+      const subscription = this.searchForm().valueChanges?.subscribe({
+        next: (value) => console.log('ny value', value.autocompleteValue),
+      });
+      this.destroyRef.onDestroy(() => subscription?.unsubscribe());
+    });
+  }
 
+  ngOnChanges(changes: SimpleChanges) {
+    // var lej = this.selectedOptionInput as Lejer;
+    // alert(this.selectedOptionInput?.DisplayTekst);
+    // You can also use categoryId.previousValue and
+    // categoryId.firstChange for comparing old and new values
+  }
   ngOnInit() {
     switch (this.autocompleteType) {
       case AutocompleteTypeEnum.Stamkort: {
-        this.optionArrayFiltered = this.setFilterOptions();
+        this.initFilterOptions();
         break;
       }
       case AutocompleteTypeEnum.Noter: {
-        this.setNoteAutocomplete();
+        this.initNoteAutocomplete();
         break;
       }
       case AutocompleteTypeEnum.Arkiv: {
-        // this.lejerArrayFiltered = this.setArkivMapper();
+        this.initArkivAutocomplete();
         break;
       }
     }
@@ -86,14 +139,19 @@ export class AutocompleteComponent implements OnInit {
     }
     return -1;
   }
+  onFocus() {
+    if (this.autocompleteType == AutocompleteTypeEnum.Arkiv) {
+      this.searchControl.updateValueAndValidity();
+    }
+  }
 
-  setFilterOptions() {
-    return this.searchControl.valueChanges.pipe(
+  initFilterOptions() {
+    this.optionArrayFiltered = this.searchControl.valueChanges.pipe(
       debounceTime(400),
       filter((x: any) => x.length > 0), //Måske 1 eller 2
       distinctUntilChanged(),
       switchMap((searchTerm: string) => {
-        // switchmap handles cancelling the previous pending request for the new one. ensuring the user doesn't see old data as they typehead
+        // switchmap handles cancelling the previous pending request for the new one. ensuring the user doesn't see old data as they type
         var asNumber = this.getAsNumber(this.stamkortTypeValue);
         var response = this.searchSercice.searchOptions(asNumber, searchTerm);
         return response;
@@ -101,20 +159,36 @@ export class AutocompleteComponent implements OnInit {
     );
   }
 
-  private setNoteAutocomplete() {
+  private initArkivAutocomplete() {
+    this.optionArrayFiltered = this.searchControl.valueChanges.pipe(
+      startWith(''),
+      map((value) => this.filterArkiv(value || ''))
+    );
+  }
+
+  private initNoteAutocomplete() {
     this.searchSercice.getNoteTyper().subscribe({
       next: (data: Note[]) => {
         this.noteArray = data;
         this.optionArrayFiltered = this.searchControl.valueChanges.pipe(
           startWith(''),
-          map((value) => this._filter(value || ''))
+          map((value) => this.filterNotes(value || ''))
         );
       },
       error: (errorres) => console.log('Error ', errorres),
     });
   }
 
-  private _filter(value: string): any[] {
+  private filterArkiv(value: string): any[] {
+    const filterValue = value.toLowerCase();
+    return this.arkivService.arkivMapper.filter(
+      (op) =>
+        op.DisplayTekst != '' &&
+        op.DisplayTekst.toLowerCase().includes(filterValue)
+    );
+  }
+
+  private filterNotes(value: string): any[] {
     const filterValue = value.toLowerCase();
     return this.noteArray.filter(
       (op) =>
@@ -123,52 +197,38 @@ export class AutocompleteComponent implements OnInit {
     );
   }
 
-  setNoteTyper() {
-    return this.searchControl.valueChanges.pipe(
-      debounceTime(400),
-      filter((x: any) => x.length > 1),
-      distinctUntilChanged(),
-      switchMap((searchTerm: string) => {
-        // switchmap handles cancelling the previous pending request for the new one. ensuring the user doesn't see old data as they typehead
-        console.log('searchTerm');
-        console.log(searchTerm);
-        var response = this.searchSercice.getNoteTyper();
-        console.log('Response ', response);
-        console.log(response);
-        return response;
-      })
-    );
-  }
-
-  selectedLejer(lejerSelected: any) {
-    var lej = lejerSelected as Lejer;
-
-    if (lejerSelected instanceof Lejer) {
-      var url = (lejerSelected as Lejer).getArkivUrlPart();
-      var mapper = this.arkivService.getArkivMapper(url).subscribe({
+  onSelectOption(optionSelected: any) {
+    console.log(optionSelected);
+    if (optionSelected instanceof Lejer) {
+      var url = (optionSelected as Lejer).getArkivUrlPart();
+      this.arkivService.getArkivMapper(url).subscribe({
+        next: (data) => {
+          console.log(data);
+          this.searchControl.updateValueAndValidity();
+          console.log('this.selectedOption?.DisplayTekst');
+          console.log(this.selectedOption?.DisplayTekst);
+          this.optionLejerSelected.emit(optionSelected);
+        },
+        error: (er) => console.log(er),
+      });
+    }
+    if (optionSelected instanceof Bygning) {
+      var url = (optionSelected as Bygning).getArkivUrlPart();
+      this.arkivService.getArkivMapper(url).subscribe({
         next: (data) => {
           console.log(data);
         },
         error: (er) => console.log(er),
       });
     }
-
-    var lll = new Lejer(lejerSelected, 0);
-    if (lll == null) {
-    }
-    console.log(lll);
-    console.log(lll.getArkivUrlPart());
-
-    console.log('Selected');
-    console.log(lejerSelected);
-    console.log(lejerSelected.IdReadonly);
-    var res = lejerSelected.getArkivUrlPart();
-    console.log('Url ' + res);
+    console.log('this.searchForm() value');
+    console.log(this.searchForm().controls['autocompleteValue'].getRawValue());
   }
 }
 
-function Testfunk(a: any) {
-  throw new Error('Function not implemented.');
+function DoSome(a: any) {
+  alert(a);
+  console.log('DoSomething');
 }
 //Test
 // SetDisplayTekst(lejers: Observable<Lejer[]>) {

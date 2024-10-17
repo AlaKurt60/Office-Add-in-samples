@@ -2,8 +2,8 @@
   <div class="row">
     <div class="col-xs-12 col-md-6 col-md-offset-3">
       <form
-        #loginform="ngForm"
-        (ngSubmit)="onSubmit(loginform)"
+        #searchform="ngForm"
+        (ngSubmit)="onSubmit(searchform)"
         name="loginform"
       >
         <div class="form-group">
@@ -20,20 +20,28 @@
           </select>
         </div>
         <app-autocomplete
+          #autocompleteStamkort
           [stamkortTypeValue]="stamkortSelectedValue"
           [autocompleteType]="AutocompleteTypeEnum.Stamkort"
+          (optionLejerSelected)="optionValueSelected($event)"
           autocompleteLabel="Indtast navn"
         />
         <app-autocomplete
+          #autocompleteNotes
           [autocompleteType]="AutocompleteTypeEnum.Noter"
           autocompleteLabel="Notetype"
+          [selectedOptionInput]="selectedOption"
         />
         <app-autocomplete
+          #autocompleteArkivs
           [autocompleteType]="AutocompleteTypeEnum.Arkiv"
           autocompleteLabel="Arkivmappe"
+          [selectedOptionInput]="selectedOption"
         />
       </form>
-      <button type="button" (click)="GemMail()" id="search">Gem mail</button>
+      <button type="button" (click)="GemMail(searchform)" id="search">
+        Gem mail
+      </button>
     </div>
   </div>
   <!-- @for (item of lejer; track item.IdReadonly) {}  -->

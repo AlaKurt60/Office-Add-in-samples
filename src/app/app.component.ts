@@ -29,8 +29,6 @@ export class AppComponent {
   onSubmit(loginform: NgForm) {
     const password = 'kli'; //loginform.form.value.password;
     const userName = 'kli'; // loginform.form.value.email;
-    // alert(userName);
-    // alert(password);
     this.isLoginProgress = true;
     this.loginService.login(userName, password).subscribe({
       next: (token) => {
