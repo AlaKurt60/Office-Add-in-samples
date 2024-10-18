@@ -1,12 +1,12 @@
-<form #autocompleteForm="ngForm" class="example-form">
+<form [formGroup]="formReactiv" class="example-form">
   <div style="margin-top: 20px">
     <input
+      formControlName="autocompleteInput"
       id="autocompleteValue"
       name="autocompleteValue"
       (mouseover)="mouseOver($event)"
       input-select-all
       (focus)="onFocus()"
-      [(ngModel)]="selectedOption"
       type="text"
       placeholder="{{ autocompleteLabel }}"
       aria-label="Number"
@@ -25,4 +25,7 @@
       }
     </mat-autocomplete>
   </div>
+  @if(autocompleteIsInvalid){
+  <p>Feltet skal udfyldes</p>
+  }
 </form>

@@ -18,6 +18,9 @@ import {
   NgForm,
   ReactiveFormsModule,
   NgModel,
+  FormGroup,
+  Validators,
+  AbstractControl,
 } from '@angular/forms';
 import {
   debounceTime,
@@ -48,11 +51,19 @@ import { Note } from '../../Models/notetype.model';
 import { ArkivService } from '../../Services/arkiv.service';
 import { Bygning } from '../../Models/bygning.model';
 
+function mustContainQuestionMark(control: AbstractControl) {
+  if (control.value.includes('?')) {
+    return null;
+  }
+  return { indeholderIkkeSporgsmaalsTegn: true };
+}
+
 @Component({
   selector: 'app-autocomplete',
   standalone: true,
   imports: [
-    FormsModule,
+    ReactiveFormsModule,
+    // FormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatAutocompleteModule,
@@ -66,7 +77,20 @@ export class AutocompleteComponent implements OnInit {
   mouseOver(event: MouseEvent) {
     // alert(event);
   }
-  private searchForm = viewChild.required<NgForm>('autocompleteForm');
+
+  formReactiv = new FormGroup({
+    autocompleteInput: new FormControl('', {
+      validators: [Validators.required, mustContainQuestionMark],
+    }),
+    autocompleteOption: new FormControl('', {
+      validators: [Validators.required, mustContainQuestionMark],
+    }),
+  });
+
+  get autocompleteIsInvalid() {
+    const field = this.formReactiv.controls.autocompleteInput;
+    return field.touched && field.invalid;
+  }
 
   @Input({ required: true }) autocompleteLabel!: string;
   @Input() stamkortTypeValue!: string;
@@ -96,21 +120,8 @@ export class AutocompleteComponent implements OnInit {
 
   constructor(
     private searchSercice: SearchService // private arkivService: ArkivService
-  ) {
-    afterNextRender(() => {
-      const subscription = this.searchForm().valueChanges?.subscribe({
-        next: (value) => console.log('ny value', value.autocompleteValue),
-      });
-      this.destroyRef.onDestroy(() => subscription?.unsubscribe());
-    });
-  }
+  ) {}
 
-  ngOnChanges(changes: SimpleChanges) {
-    // var lej = this.selectedOptionInput as Lejer;
-    // alert(this.selectedOptionInput?.DisplayTekst);
-    // You can also use categoryId.previousValue and
-    // categoryId.firstChange for comparing old and new values
-  }
   ngOnInit() {
     switch (this.autocompleteType) {
       case AutocompleteTypeEnum.Stamkort: {
@@ -198,6 +209,7 @@ export class AutocompleteComponent implements OnInit {
   }
 
   onSelectOption(optionSelected: any) {
+    alert(9);
     console.log(optionSelected);
     if (optionSelected instanceof Lejer) {
       var url = (optionSelected as Lejer).getArkivUrlPart();
@@ -221,8 +233,10 @@ export class AutocompleteComponent implements OnInit {
         error: (er) => console.log(er),
       });
     }
-    console.log('this.searchForm() value');
-    console.log(this.searchForm().controls['autocompleteValue'].getRawValue());
+    setTimeout(() => {
+      console.log('this.searchForm() value');
+      console.log(this.formReactiv.controls.autocompleteInput);
+    }, 1001);
   }
 }
 
