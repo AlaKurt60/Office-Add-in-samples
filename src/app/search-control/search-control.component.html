@@ -6,7 +6,13 @@
         (ngSubmit)="onSubmit(searchform)"
         name="loginform"
       >
-        <!-- <ng-autocomplete></ng-autocomplete> -->
+        <app-ng-autocomplete
+          #autocompleteStamkort
+          [stamkortTypeValue]="stamkortSelectedValue"
+          [autocompleteType]="AutocompleteTypeEnum.Stamkort"
+          (optionLejerSelected)="optionValueSelected($event)"
+          autocompleteLabel="Indtast navn"
+        />
 
         <div class="form-group">
           <select

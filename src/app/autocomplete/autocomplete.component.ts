@@ -209,7 +209,6 @@ export class AutocompleteComponent implements OnInit {
   }
 
   onSelectOption(optionSelected: any) {
-    alert(9);
     console.log(optionSelected);
     if (optionSelected instanceof Lejer) {
       var url = (optionSelected as Lejer).getArkivUrlPart();

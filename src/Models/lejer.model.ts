@@ -54,4 +54,8 @@ export class Lejer implements IModel {
   getArkivUrlPart(): string {
     return 'api/esdh/lejere/' + this.IdReadonly + '/journalplan/mapper';
   }
+  getArkivMappe() {
+    //Opret rodmappe
+    // return mapper;
+  }
 }

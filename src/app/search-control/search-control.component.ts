@@ -7,13 +7,18 @@ import { CommonModule, NgFor } from '@angular/common';
 import { Lejer } from '../../Models/lejer.model';
 import { StamkortEnum } from '../Enums/stamkort.enum';
 import { AutocompleteTypeEnum } from '../Enums/autocompleteType.enum';
-import { Bygning } from '../../Models/bygning.model';
-import { Finansenhed } from '../../Models/finansenhed.model';
+import { NgAutocompleteComponent } from '../NgAutocomplete/ng-autocomplete/ng-autocomplete.component';
 
 @Component({
   selector: 'app-search-control',
   standalone: true,
-  imports: [NgFor, FormsModule, AutocompleteComponent, CommonModule],
+  imports: [
+    NgFor,
+    FormsModule,
+    AutocompleteComponent,
+    CommonModule,
+    NgAutocompleteComponent,
+  ],
   templateUrl: './search-control.component.html',
   styleUrl: './search-control.component.css',
 })

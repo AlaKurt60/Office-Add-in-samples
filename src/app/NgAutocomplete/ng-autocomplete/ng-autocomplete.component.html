@@ -1,0 +1,29 @@
+<form [formGroup]="ngformReactiv" class="example-form">
+  <div class="ng-autocomplete">
+    <ng-autocomplete
+      formControlName="ngAutocompleteInput"
+      [data]="optionArray"
+      [searchKeyword]="keyword"
+      placeholder="Select "
+      (selected)="selectEvent($event)"
+      (inputChanged)="onChangeSearch($event)"
+      (inputFocused)="onFocused($event)"
+      [itemTemplate]="itemTemplate"
+      [notFoundTemplate]="notFoundTemplate"
+    >
+    </ng-autocomplete>
+
+    <ng-template #itemTemplate let-item>
+      <a [innerHTML]="item.name"></a>
+    </ng-template>
+
+    <ng-template #notFoundTemplate let-notFound>
+      <div [innerHTML]="notFound"></div>
+    </ng-template>
+  </div>
+  @if(autocompleteIsInvalid){
+  <p>Vælg noget!</p>
+  } @for (option of optionArray ; track option.id) {
+  <p>{{ option.DisplayTekst }}</p>
+  }
+</form>

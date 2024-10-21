@@ -57,6 +57,7 @@ export class SearchService {
 
   searchOptions(key: number, soegetekst: string): Observable<any[]> {
     var url = this.getApiUrl(key, soegetekst);
+
     switch (key) {
       case StamkortEnum.Lejer: {
         return this.searchLejer(url);
@@ -73,6 +74,25 @@ export class SearchService {
     }
     return new Observable<any[]>();
   }
+
+  // searchOptionsNew(key: number, soegetekst: string): any[] {
+  //   var url = this.getApiUrl(key, soegetekst);
+  //   switch (key) {
+  //     case StamkortEnum.Lejer: {
+  //       return this.searchLejerAsArray(url);
+  //     }
+  //     // case StamkortEnum.Bygning: {
+  //     //   return this.searchBygning(url);
+  //     // }
+  //     // case StamkortEnum.Lejemål: {
+  //     //   return this.searchLejemaal(url);
+  //     // }
+  //     // case StamkortEnum.Finansenhed: {
+  //     //   return this.searchFinansenhed(url);
+  //     // }
+  //   }
+  //   return any[];
+  // }
 
   private searchFinansenhed(url: string) {
     return this.httpClient.get<FinansenhedStruct>(url).pipe(
@@ -112,9 +132,19 @@ export class SearchService {
     );
   }
 
+  private searchLejerAsArray(url: string) {
+    return this.httpClient.get<LejerStruct>(url).pipe(
+      map((data: LejerStruct) => {
+        return LejerMapper.map(data['$values'] as Lejer[]);
+      })
+    );
+  }
+
   private searchLejer(url: string) {
     return this.httpClient.get<LejerStruct>(url).pipe(
       map((data: LejerStruct) => {
+        console.log(data['$values']);
+
         return LejerMapper.map(data['$values']);
       })
     );
