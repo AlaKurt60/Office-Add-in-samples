@@ -165,6 +165,7 @@ export class AutocompleteComponent implements OnInit {
         // switchmap handles cancelling the previous pending request for the new one. ensuring the user doesn't see old data as they type
         var asNumber = this.getAsNumber(this.stamkortTypeValue);
         var response = this.searchSercice.searchOptions(asNumber, searchTerm);
+        console.log('Lejer response ', response);
         return response;
       })
     );
@@ -209,127 +210,21 @@ export class AutocompleteComponent implements OnInit {
   }
 
   onSelectOption(optionSelected: any) {
-    console.log(optionSelected);
-    if (optionSelected instanceof Lejer) {
-      var url = (optionSelected as Lejer).getArkivUrlPart();
-      this.arkivService.getArkivMapper(url).subscribe({
+    if (this.autocompleteType == AutocompleteTypeEnum.Stamkort) {
+      console.log('optionSelected');
+      console.log(optionSelected);
+      this.arkivService.getArkivMapper(optionSelected).subscribe({
         next: (data) => {
           console.log(data);
           this.searchControl.updateValueAndValidity();
-          console.log('this.selectedOption?.DisplayTekst');
-          console.log(this.selectedOption?.DisplayTekst);
           this.optionLejerSelected.emit(optionSelected);
         },
         error: (er) => console.log(er),
       });
+      setTimeout(() => {
+        console.log('this.searchForm() value');
+        console.log(this.formReactiv.controls.autocompleteInput);
+      }, 110);
     }
-    if (optionSelected instanceof Bygning) {
-      var url = (optionSelected as Bygning).getArkivUrlPart();
-      this.arkivService.getArkivMapper(url).subscribe({
-        next: (data) => {
-          console.log(data);
-        },
-        error: (er) => console.log(er),
-      });
-    }
-    setTimeout(() => {
-      console.log('this.searchForm() value');
-      console.log(this.formReactiv.controls.autocompleteInput);
-    }, 1001);
   }
 }
-
-function DoSome(a: any) {
-  alert(a);
-  console.log('DoSomething');
-}
-//Test
-// SetDisplayTekst(lejers: Observable<Lejer[]>) {
-//   var index = 0;
-//   var ar: string[] = [];
-//   lejers.subscribe((nnn) => (this.lejertest = this.SetId(nnn)));
-//   console.log('this.testArray');
-//   console.log(this.testArray);
-//   // lejers.forEach((l) => {
-//   //   index++;
-//   //   if (ar.indexOf(l.KontaktIdReadOnly.toString()) > 0) {
-//   //     alert(l.KontaktIdReadOnly.toString());
-//   //   }
-//   //   ar.push(l.KontaktIdReadOnly.toString());
-//   //   l.IdReadonly = index.toString();
-//   // });
-//   // return of(lejer);
-//   return lejers;
-// }
-
-// SetId(lejer: Lejer) {}
-// SearchLejer(search: string) {
-//   this.searchSercice.search2('Lejer', search).subscribe({
-//     next: (data: LejerStruct) => {
-//       this.lejerArrayFiltered = this.SetDisplayTekst(data.$values);
-//       this.lejerArrayFiltered = this.searchControl.valueChanges.pipe(
-//         startWith(''),
-//         debounceTime(400),
-//         map((value) => this._filter(value || ''))
-//       );
-//     },
-//   });
-// }
-
-// SearchLejer(search: string) {
-//   this.searchSercice.search2('Lejer', search).subscribe({
-//     next: (data: LejerStruct) => {
-//       this.lejerArray = data.$values;
-//       this.SetDisplayTekst();
-//       var opt: string[] = [];
-//       this.lejerArray.forEach((lejer) => {
-//         opt.push(lejer.DisplayTekst);
-//       });
-//       this.options = opt;
-//       this.filteredOptions = this.searchControl.valueChanges.pipe(
-//         startWith(''),
-//         map((value) => this._filter(value || ''))
-//       );
-//     },
-//     error: (err: Error) => {
-//       console.log('Fejl! ');
-//       console.log(err);
-//     },
-//   });
-// }
-
-// SetDisplayTekst() {
-//   this.lejerArray.forEach((lejer) => {
-//     lejer.DisplayTekst =
-//       lejer.LejerstrengReadonly +
-//       ', ' +
-//       lejer.NavnReadonly +
-//       ', ' +
-//       lejer.Adresse1Readonly +
-//       ', ' +
-//       lejer.Adresse2Readonly +
-//       ', ' +
-//       lejer.LejerStatusString;
-//   });
-// }
-// ngOnInitOld() {
-// this.filteredOptions = this.searchControl.valueChanges.pipe(
-//   startWith(''),
-//   map((value) => this._filter(value || ''))
-// );
-// this.searchSercice.search2('Lejer', 'j').subscribe((data) => {
-//   console.log(data);
-//   this.filteredOptions = data;
-// });
-// }
-
-// private _filterOld(value: string): Observable<Lejer[]> | undefined {
-//   if (value != '') {
-//     this.SearchLejer(value);
-//   }
-//   const filterValue = value.toLowerCase();
-//   return this.lejerArrayFiltered;
-//   // this.options.filter((option) =>
-//   //   option.toLowerCase().includes(filterValue)
-//   // );
-// }

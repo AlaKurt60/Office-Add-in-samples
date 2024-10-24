@@ -1,4 +1,5 @@
 import { IModel } from '../Interface/imodel.model';
+import { ArkivMappe } from './arkiv.model';
 
 export interface FinansenhedStruct {
   $type: string;
@@ -9,19 +10,31 @@ export class Finansenhed implements IModel {
   FinselskabId: number;
   FinselskabNr: number;
   Navn: null | string;
-  DisplayTekst: string;
-  id: number;
+  DisplayTekst!: string;
+  unikId: number;
 
-  // Constructor that accepts a Finansenhed object
-  constructor(finansenhed: Finansenhed) {
+  constructor(finansenhed: Finansenhed, id: number) {
+    this.unikId = id;
     this.FinselskabId = finansenhed.FinselskabId;
     this.FinselskabNr = finansenhed.FinselskabNr;
     this.Navn = finansenhed.Navn;
-    this.DisplayTekst = finansenhed.DisplayTekst || ''; // Default to empty string if not provided
-    this.id = finansenhed.id;
+    this.setDisplayTekst();
+  }
+  setDisplayTekst(): void {
+    this.DisplayTekst = this.FinselskabNr + ' - ' + this.Navn;
   }
 
   getArkivUrlPart(): string {
-    return 'api/esdh/finansenhed/' + this.FinselskabId;
+    // api/esdh/finansenheder/86/journalplan/mapper
+    return (
+      'api/esdh/finansenheder/' + this.FinselskabId + '/journalplan/mapper'
+    );
+  }
+
+  getMapper(mapper: ArkivMappe[]): ArkivMappe[] {
+    var displayTekst = '\\Finansenhed '; //${this.SelskabNr}-${this.Nr} ${this.EjendomInfo?.Navn}`;''
+    var rodmappe = new ArkivMappe(displayTekst);
+    mapper.unshift(rodmappe);
+    return mapper;
   }
 }

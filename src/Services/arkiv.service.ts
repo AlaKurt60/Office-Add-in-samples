@@ -13,25 +13,21 @@ export class ArkivService {
 
   constructor(private httpClient: HttpClient) {}
 
-  getArkivMapper(url: string): Observable<ArkivMappe[]> {
-    var url = this.getAbsolutUrl(url);
+  getArkivMapper(optionSelected: any): Observable<ArkivMappe[]> {
+    var url = this.getAbsolutUrl(optionSelected.getArkivUrlPart());
     console.log('Url arkiv ' + url);
     return this.httpClient.get<ArkivMappeRoot>(url).pipe(
       map((data: ArkivMappeRoot) => {
-        console.log('Arkiv first');
-        console.log(data);
         var res = data.MapperReadonly.$values; //['MapperReadonly'];
-        console.log('Arkiv');
-        console.log(res);
-        var idIndex = 0;
+        var idIndex = 1;
         res.forEach((q) => {
           q.DisplayTekst = q.Navn;
-          q.id = idIndex;
+          q.unikId = idIndex;
           idIndex++;
         });
-        this.arkivMapper = res;
         console.log('Mapper');
         console.log(res);
+        this.arkivMapper = optionSelected.getMapper(res);
         return res;
       })
     );

@@ -16,7 +16,7 @@
       class="example-form"
     />
     <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
-      @for (option of optionArrayFiltered | async; track option.id) {
+      @for (option of optionArrayFiltered | async; track option.unikId) {
       <mat-option
         [value]="option.DisplayTekst"
         (onSelectionChange)="onSelectOption(option)"

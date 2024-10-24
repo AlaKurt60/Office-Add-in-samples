@@ -16,11 +16,11 @@ export class Bygning implements IModel {
   Adresse1: null | string;
   Adresse2: null;
   DisplayTekst: string = '';
-  id: number;
+  unikId: number;
   arkivMapper?: ArkivMappe[];
 
   constructor(bygning: Bygning, id: number) {
-    this.id = id;
+    this.unikId = id;
     this.BygningId = bygning.BygningId;
     this.SelskabNrReadOnly = bygning.SelskabNrReadOnly;
     this.EjendomNrReadOnly = bygning.EjendomNrReadOnly;
@@ -31,7 +31,7 @@ export class Bygning implements IModel {
     this.setDisplayTekst();
   }
 
-  private setDisplayTekst() {
+  setDisplayTekst() {
     this.DisplayTekst =
       this.SelskabNrReadOnly +
       StringUtility.addIfNotNull(this.EjendomNrReadOnly) +
@@ -41,5 +41,12 @@ export class Bygning implements IModel {
 
   getArkivUrlPart(): string {
     return 'api/esdh/bygninger/' + this.BygningId + '/journalplan/mapper';
+  }
+
+  getMapper(mapper: ArkivMappe[]): ArkivMappe[] {
+    var displayTekst = '\\Bygning '; //${this.SelskabNr}-${this.Nr} ${this.EjendomInfo?.Navn}`;''
+    var rodmappe = new ArkivMappe(displayTekst);
+    mapper.unshift(rodmappe);
+    return mapper;
   }
 }

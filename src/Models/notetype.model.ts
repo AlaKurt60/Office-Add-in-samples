@@ -17,5 +17,5 @@ export interface Note {
   Tekst2: null;
   EnableChangeTrackingAndNotifaction: boolean;
   DisplayTekst: string;
-  id: number;
+  unikId: number;
 }

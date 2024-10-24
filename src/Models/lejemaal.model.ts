@@ -1,4 +1,6 @@
+import { StringUtility } from '../Helper/string.utility';
 import { IModel } from '../Interface/imodel.model';
+import { ArkivMappe } from './arkiv.model';
 
 export interface LejemaalStruct {
   $type: string;
@@ -22,11 +24,10 @@ export class Lejemaal implements IModel {
   PositionReadOnly?: string;
   EnableChangeTrackingAndNotifaction: boolean;
   DisplayTekst: string;
-  id: number;
+  unikId: number;
 
-  // Constructor that accepts a Lejemaal object
   constructor(lejemaal: Lejemaal, id: number) {
-    this.id = id;
+    this.unikId = id;
     this.IdReadonly = lejemaal.IdReadonly;
     this.LejemaalstrengReadonly = lejemaal.LejemaalstrengReadonly;
     this.EjendomNrReadonly = lejemaal.EjendomNrReadonly;
@@ -44,9 +45,25 @@ export class Lejemaal implements IModel {
     this.EnableChangeTrackingAndNotifaction =
       lejemaal.EnableChangeTrackingAndNotifaction;
     this.DisplayTekst = lejemaal.DisplayTekst || '';
+    this.setDisplayTekst();
+  }
+
+  setDisplayTekst() {
+    this.DisplayTekst =
+      this.LejemaalstrengReadonly +
+      StringUtility.addIfNotNullOrEmpty(this.Adresse1Readonly) +
+      StringUtility.addIfNotNullOrEmpty(this.Adresse2Readonly) +
+      StringUtility.addIfNotNullOrEmpty(this.Adresse2Readonly);
   }
 
   getArkivUrlPart(): string {
-    return 'api/esdh/lejemaal/' + this.IdReadonly;
+    return 'api/esdh/lejemaal/' + this.IdReadonly + '/journalplan/mapper';
+  }
+
+  getMapper(mapper: ArkivMappe[]): ArkivMappe[] {
+    var displayTekst = '\\Lejemål '; //${this.SelskabNr}-${this.Nr} ${this.EjendomInfo?.Navn}`;''
+    var rodmappe = new ArkivMappe(displayTekst);
+    mapper.unshift(rodmappe);
+    return mapper;
   }
 }

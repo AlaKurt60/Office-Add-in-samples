@@ -9,26 +9,22 @@ export interface ArkivMappeRoot {
   EnableChangeTrackingAndNotifaction: boolean;
 }
 
-export interface ArkivMappe {
-  $type: string;
-  IdReadonly: number;
-  NoteTypeKodeIderReadonly: NotetypeStruct;
-  Navn: string;
-  ParentMappeId: number | null;
-  EnhedId: EnhedID;
-  Sti: string;
-  MaaDerOprettesUnderMapperReadonly: boolean;
-  MaaMappenRedigeresReadonly: boolean;
-  MaaMappenSlettesReadonly: boolean;
-  MaaNoterRedigeresReadonly: boolean;
-  MaaNoterSlettesReadonly: boolean;
-  MaaNoterSesReadonly: boolean;
-  MaaNoterOprettesReadonly: boolean;
-  MaaMappenSesReadonly: boolean;
-  EnableChangeTrackingAndNotifaction: boolean;
+export class ArkivMappe {
+  IdReadonly?: number;
+  NoteTypeKodeIderReadonly?: NotetypeStruct;
+  Navn!: string;
+  ParentMappeId?: number;
+  EnhedId?: EnhedID;
+  Sti?: string;
   HenvisningSti?: string;
-  DisplayTekst: string;
-  id: number;
+  DisplayTekst!: string;
+  unikId: number;
+
+  constructor(navn: string) {
+    this.Navn = navn;
+    this.DisplayTekst = navn;
+    this.unikId = 0;
+  }
 }
 
 export interface ArkivMappeStruct {
